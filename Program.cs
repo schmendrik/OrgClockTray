@@ -12,34 +12,48 @@ namespace OrgClockTray
     {
         private NotifyIcon ni = new NotifyIcon();
         private IntPtr hIcon;
-        private System.IO.FileSystemWatcher watcher;
+        private FileSystemWatcher watcher;
 
-        private string TimerFileDirectoryPath = Path.Combine(Environment.GetEnvironmentVariable("HOME"), @".emacs.d");
-        private string TimerFileName = ".task";
+        private static string timerFilePath;
 
         private Regex clockString = new Regex(@"\s*\[(\d*):(\d*)\]\s*\((.*)\)");
 
-        public OrgClockTrayProgram()
-        {
-            watcher = new System.IO.FileSystemWatcher();
-            watcher.Path = TimerFileDirectoryPath;
-            watcher.Filter = TimerFileName;
-            watcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite;
-            watcher.Changed += new FileSystemEventHandler(onFileChanged);
-            watcher.EnableRaisingEvents = true;
-        }
-
         [STAThread]
-        static void Main()
+        static void Main(string[] args)
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+
+            if (args.Length > 0 && !string.IsNullOrEmpty(args[0]))
+            {
+                if (File.Exists(args[0]))
+                {
+                    timerFilePath = args[0];
+                }
+                else
+                {
+                    Console.WriteLine("File does not exist: {0}", args[0]);
+                    timerFilePath = Path.Combine(Path.Combine(Environment.GetEnvironmentVariable("HOME"), @".emacs.d"), ".task");
+                }
+            }
+
+            Console.WriteLine("Using file: {0}", timerFilePath);
 
             using (OrgClockTrayProgram orgClock = new OrgClockTrayProgram())
             {
                 orgClock.init();
                 Application.Run();
             }
+        }
+
+        public OrgClockTrayProgram()
+        {
+            watcher = new FileSystemWatcher();
+            watcher.Path = Path.GetDirectoryName(timerFilePath);
+            watcher.Filter = Path.GetFileName(timerFilePath);
+            watcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite;
+            watcher.Changed += new FileSystemEventHandler(onFileChanged);
+            watcher.EnableRaisingEvents = true;
         }
 
         [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = CharSet.Auto)]
@@ -55,6 +69,7 @@ namespace OrgClockTray
             menu.Items.Add(item);
             ni.ContextMenuStrip = menu;
             setIdleIcon();
+            setToolTip(timerFilePath);
         }
 
         public void Dispose()
@@ -79,7 +94,7 @@ namespace OrgClockTray
             String toolTip = string.Empty;
             try
             {
-                if (e.FullPath == Path.Combine(TimerFileDirectoryPath, TimerFileName))
+                if (e.FullPath.Equals(timerFilePath))
                 {
                     var fs = new FileStream(e.FullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                     using (var r = new StreamReader(fs))
@@ -92,23 +107,24 @@ namespace OrgClockTray
                             Match m = clockString.Match(line);
                             if (m.Success)
                             {
+                                toolTip = m.Groups[3].Value; // clocked item                                
                                 String hourStr = m.Groups[1].Value;
-                                String minStr = m.Groups[2].Value;
-                                toolTip = m.Groups[3].Value; // clocked item
-
-                                int min = int.Parse(minStr);
-                                double minRounded = min / 60.0;
-                                string timeStr;
-                                if (hourStr.Length < 3)
+                                String timeStr;
+                                int xOffset;
+                                if(hourStr.Length == 1)
                                 {
-                                    if (min > 0)
-                                        timeStr = string.Format("{0}.{1}", hourStr, minRounded.ToString()[2]); 
-                                    else
-                                        timeStr = string.Format("{0}.0", hourStr);
+                                    String minStr = m.Groups[2].Value;
+                                    int min = int.Parse(minStr);
+                                    double min2 = min / 60.0;
+                                    timeStr = string.Format("{0}.{1}", hourStr, (min > 0 ? min2.ToString()[2].ToString() : "0"));
+                                    xOffset = 0;
                                 }
-                                else
+                                else 
+                                {
                                     timeStr = hourStr;
-                                setTextIcon(timeStr);
+                                    xOffset = hourStr.Length == 2 ? 2 : -1;
+                                }
+                                setTextIcon(timeStr, xOffset);
                             }
                         }
                     }
@@ -121,15 +137,12 @@ namespace OrgClockTray
             setToolTip(toolTip);
         }
 
-        public void setTextIcon(string str)
+        public void setTextIcon(string str, int xOffset)
         {
             Font font = new Font("Arial", 9, FontStyle.Regular, GraphicsUnit.Pixel);
             Bitmap bitmapText = new Bitmap(16, 16);
             Graphics g = System.Drawing.Graphics.FromImage(bitmapText);
             g.Clear(Color.FromArgb(30, 30, 30));
-            int xOffset = -2;
-            if (str.Length == 3 && str.Contains("."))
-                xOffset = 0;
             Point p = new Point(xOffset, 2);
             TextRenderer.DrawText(g, str, font, p, Color.White);
             hIcon = (bitmapText.GetHicon());
