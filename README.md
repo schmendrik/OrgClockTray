@@ -22,8 +22,6 @@ Icon displayed when idle:
 ![Icon displayed when idle](https://github.com/schmendrik/OrgClockTray/blob/master/Resources/Screenshot1.png
  "No active clock")
 
-# lool
-
 ## Getting Started
 
 1. In order for OrgClockTray to know your clock time, you need to add this to your emacs' init file:
@@ -43,7 +41,7 @@ Icon displayed when idle:
 4. Test: clock in and watch OrgClockTray display the time in a tray icon.
 
 Note: By default, OrgClockTray reads from a file 
-named '.task' that is located in your .emacs.d directory. You can
+named '.task', which is located in your .emacs.d directory. You can
 modify the file path in the lisp code to export the time to another
 file path, which you'll need to pass to OrgClockTray as a command line
 argument.
