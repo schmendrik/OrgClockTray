@@ -12,14 +12,14 @@ If this is the case, OrgClockTray is for you.
 
 ## Screenshots
 
-Icon displayed when the clock's running:
+Icon displayed when the clock is running:
 
-![Icon displayed when the clock's running](https://github.com/schmendrik/OrgClockTray/blob/master/Resources/Screenshot1.png
+![Icon displayed when the clock's running](https://github.com/schmendrik/OrgClockTray/blob/master/Resources/Screenshot2.png
  "Active clock")
 
 Icon displayed when idle:
 
-![Icon displayed when idle](https://github.com/schmendrik/OrgClockTray/blob/master/Resources/Screenshot2.png
+![Icon displayed when idle](https://github.com/schmendrik/OrgClockTray/blob/master/Resources/Screenshot1.png
  "No active clock")
 
 ## Getting Started
