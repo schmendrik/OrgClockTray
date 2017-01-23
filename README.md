@@ -25,8 +25,7 @@ Icon displayed when idle:
 ## Getting Started
 
 1. In order for OrgClockTray to know your clock time, you need to add
-   this to your emacs' init file:
-```lisp
+   this to your emacs' init file: ```lisp
 (defun current-clock-time-to-file ()
   (interactive)
   (with-temp-file "~/.emacs.d/.task"
