@@ -12,19 +12,21 @@ If this is the case, OrgClockTray is for you.
 
 ## Screenshots
 
-Icon displayed when the clock is running:
+**Icon displayed when the clock is running:**
 
 ![Icon displayed when the clock's running](https://github.com/schmendrik/OrgClockTray/blob/master/Resources/Screenshot2.png
  "Active clock")
 
-Icon displayed when idle:
+Since the space within a 16x16 pixel icon is relatively limited, the total time is converted to hours, which is displayed as a decimal number. Double and triple-digit numbers are displayed as an integer.
+
+**Icon displayed when idle:**
 
 ![Icon displayed when idle](https://github.com/schmendrik/OrgClockTray/blob/master/Resources/Screenshot1.png
  "No active clock")
 
 ## Getting Started
 
-1. In order for OrgClockTray to know your clock time, you need to add this to your emacs' init file:
+1. In order for OrgClockTray to know your clock time, you need to add the following code to your emacs' init file:
 
         (defun current-clock-time-to-file ()
           (interactive)
@@ -45,11 +47,3 @@ named '.task', which is located in your .emacs.d directory. You can
 modify the file path in the lisp code to export the time to another
 file path, which you'll need to pass to OrgClockTray as a command line
 argument.
-
-## Time Format
-
-Since the space within a 16x16 pixel icon is limited, the total time
-is converted into hours, which is displayed as a decimal number.
-the hour.
-
-If the hours exceed single-digit, they'll be displayed as an integer to conserve space for double and triple-digit numbers.
