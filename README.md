@@ -3,7 +3,7 @@
 OrgClockTray displays your currently running clock time in a tray
 icon in Windows' Taskbar.
 
-If you use org-mode to clock your work time, but your work requires you to
+If you use org-mode to clock your work time, and your work requires you to
 use tools other than emacs, you may find yourself switching back and
 forth to check the time, or make sure that you've clocked-in at
 all and didn't clock-out by mistake.
