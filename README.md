@@ -1,6 +1,6 @@
 # OrgClockTray
 
-OrgClockTray displays your currently running clock time in a tray
+OrgClockTray displays your org-mode clock time in a tray
 icon in Windows' Taskbar.
 
 If you use org-mode to clock your work time, and your work requires you to
@@ -38,7 +38,7 @@ Since the space within a 16x16 pixel icon is relatively limited, the total time 
         (add-hook 'org-clock-in-hook 'current-clock-time-to-file)
         (add-hook 'org-clock-out-hook 'current-clock-time-to-file)
 
-2. Download the OrgClockTray release [here](https://github.com/schmendrik/OrgClockTray/releases).
+2. Download the latest OrgClockTray release [here](https://github.com/schmendrik/OrgClockTray/releases/latest).
 3. Optional: Put a shortcut to OrgClockTray.exe into your Startup folder.
 4. Test: Clock-in and watch OrgClockTray display the time in a tray icon.
 
