@@ -33,9 +33,15 @@ namespace OrgClockTray
                 else
                 {
                     Console.WriteLine("File does not exist: {0}", args[0]);
-                    timerFilePath = Path.Combine(Path.Combine(Environment.GetEnvironmentVariable("HOME"), @".emacs.d"), ".task");
                 }
             }
+
+            if(string.IsNullOrEmpty(timerFilePath))
+                timerFilePath = Path.Combine(Path.Combine(Environment.GetEnvironmentVariable("HOME"), @".emacs.d"), ".task");
+
+            // Create the file to be monitored first in case org-mode hasn't created it yet
+            if (!File.Exists(timerFilePath))
+                File.Create(timerFilePath).Dispose();
 
             Console.WriteLine("Using file: {0}", timerFilePath);
 
@@ -44,16 +50,6 @@ namespace OrgClockTray
                 orgClock.init();
                 Application.Run();
             }
-        }
-
-        public OrgClockTrayProgram()
-        {
-            watcher = new FileSystemWatcher();
-            watcher.Path = Path.GetDirectoryName(timerFilePath);
-            watcher.Filter = Path.GetFileName(timerFilePath);
-            watcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite;
-            watcher.Changed += new FileSystemEventHandler(onFileChanged);
-            watcher.EnableRaisingEvents = true;
         }
 
         [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = CharSet.Auto)]
@@ -68,8 +64,25 @@ namespace OrgClockTray
             item.Click += new System.EventHandler((sender, e) => Application.Exit());
             menu.Items.Add(item);
             ni.ContextMenuStrip = menu;
-            setIdleIcon();
-            setToolTip(timerFilePath);
+
+            try
+            {
+                watcher = new FileSystemWatcher();
+                watcher.Path = Path.GetDirectoryName(timerFilePath);
+                watcher.Filter = Path.GetFileName(timerFilePath);
+                watcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite;
+                watcher.Changed += new FileSystemEventHandler((object sender, FileSystemEventArgs e) =>
+                {
+                    if (e.FullPath.Equals(timerFilePath))
+                        updateTime();
+                });
+                watcher.EnableRaisingEvents = true;
+                updateTime();
+            }
+            catch (Exception oops)
+            {
+                Console.WriteLine(oops);
+            }            
         }
 
         public void Dispose()
@@ -89,48 +102,45 @@ namespace OrgClockTray
             ni.Text = text.Length > 63 ? text.Substring(0, 60) + "..." : text;
         }
 
-        private void onFileChanged(object sender, FileSystemEventArgs e)
+        private void updateTime()
         {
             String toolTip = string.Empty;
             try
             {
-                if (e.FullPath.Equals(timerFilePath))
+                var fs = new FileStream(timerFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                using (var r = new StreamReader(fs))
                 {
-                    var fs = new FileStream(e.FullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                    using (var r = new StreamReader(fs))
+                    string line = r.ReadLine();
+                    if (String.IsNullOrEmpty(line))
+                        setIdleIcon();
+                    else
                     {
-                        string line = r.ReadLine();
-                        if (String.IsNullOrEmpty(line))
-                            setIdleIcon();
-                        else
+                        Match m = clockString.Match(line);
+                        if (m.Success)
                         {
-                            Match m = clockString.Match(line);
-                            if (m.Success)
+                            toolTip = m.Groups[3].Value; // clocked item                                
+                            String hourStr = m.Groups[1].Value;
+                            String timeStr;
+                            int xOffset;
+                            if (hourStr.Length == 1)
                             {
-                                toolTip = m.Groups[3].Value; // clocked item                                
-                                String hourStr = m.Groups[1].Value;
-                                String timeStr;
-                                int xOffset;
-                                if(hourStr.Length == 1)
-                                {
-                                    String minStr = m.Groups[2].Value;
-                                    int min = int.Parse(minStr);
-                                    double min2 = min / 60.0;
-                                    timeStr = string.Format("{0}.{1}", hourStr, (min > 0 ? min2.ToString()[2].ToString() : "0"));
-                                    xOffset = 0;
-                                }
-                                else 
-                                {
-                                    timeStr = hourStr;
-                                    xOffset = hourStr.Length == 2 ? 2 : -1;
-                                }
-                                setTextIcon(timeStr, xOffset);
+                                String minStr = m.Groups[2].Value;
+                                int min = int.Parse(minStr);
+                                double min2 = min / 60.0;
+                                timeStr = string.Format("{0}.{1}", hourStr, (min > 0 ? min2.ToString()[2].ToString() : "0"));
+                                xOffset = 0;
                             }
+                            else
+                            {
+                                timeStr = hourStr;
+                                xOffset = hourStr.Length == 2 ? 2 : -1;
+                            }
+                            setTextIcon(timeStr, xOffset);
                         }
                     }
                 }
             }
-            catch(Exception oops)
+            catch (Exception oops)
             {
                 toolTip = "Error: " + oops.Message;
             }

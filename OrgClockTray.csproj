@@ -32,7 +32,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>CoffeeBreak.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\CoffeeBreakIcon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -74,7 +74,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="CoffeeBreak.ico" />
+    <EmbeddedResource Include="Resources\CoffeeBreakIcon.ico" />
     <Content Include="Resources\CoffeeBreak.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
