@@ -24,31 +24,28 @@ namespace OrgClockTray
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            if (args.Length > 0 && !string.IsNullOrEmpty(args[0]))
+            try
             {
-                if (File.Exists(args[0]))
-                {
+                if (args.Length > 0 && !string.IsNullOrEmpty(args[0]))
                     timerFilePath = args[0];
-                }
                 else
+                    timerFilePath = Path.Combine(Path.Combine(Environment.GetEnvironmentVariable("HOME"), @".emacs.d"), ".task");
+
+                // Create the file to be monitored first in case org-mode hasn't created it yet
+                if (!File.Exists(timerFilePath))
+                    File.Create(timerFilePath).Dispose();
+
+                Console.WriteLine("Using file: {0}", timerFilePath);
+
+                using (OrgClockTrayProgram orgClock = new OrgClockTrayProgram())
                 {
-                    Console.WriteLine("File does not exist: {0}", args[0]);
+                    orgClock.init();
+                    Application.Run();
                 }
             }
-
-            if(string.IsNullOrEmpty(timerFilePath))
-                timerFilePath = Path.Combine(Path.Combine(Environment.GetEnvironmentVariable("HOME"), @".emacs.d"), ".task");
-
-            // Create the file to be monitored first in case org-mode hasn't created it yet
-            if (!File.Exists(timerFilePath))
-                File.Create(timerFilePath).Dispose();
-
-            Console.WriteLine("Using file: {0}", timerFilePath);
-
-            using (OrgClockTrayProgram orgClock = new OrgClockTrayProgram())
+            catch(Exception oops)
             {
-                orgClock.init();
-                Application.Run();
+                Console.WriteLine(oops);
             }
         }
 
@@ -65,24 +62,18 @@ namespace OrgClockTray
             menu.Items.Add(item);
             ni.ContextMenuStrip = menu;
 
-            try
+            watcher = new FileSystemWatcher();
+            watcher.Path = Path.GetDirectoryName(timerFilePath);
+            watcher.Filter = Path.GetFileName(timerFilePath);
+            watcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite;
+            watcher.Changed += new FileSystemEventHandler((object sender, FileSystemEventArgs e) =>
             {
-                watcher = new FileSystemWatcher();
-                watcher.Path = Path.GetDirectoryName(timerFilePath);
-                watcher.Filter = Path.GetFileName(timerFilePath);
-                watcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite;
-                watcher.Changed += new FileSystemEventHandler((object sender, FileSystemEventArgs e) =>
-                {
-                    if (e.FullPath.Equals(timerFilePath))
-                        updateTime();
-                });
-                watcher.EnableRaisingEvents = true;
-                updateTime();
-            }
-            catch (Exception oops)
-            {
-                Console.WriteLine(oops);
-            }            
+                if (e.FullPath.Equals(timerFilePath))
+                    updateTime();
+            });
+            watcher.EnableRaisingEvents = true;
+
+            updateTime();
         }
 
         public void Dispose()
