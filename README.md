@@ -26,7 +26,7 @@ Since the space within a 16x16 pixel icon is relatively limited, the total time 
 
 ## Installation
 
-1. In order for OrgClockTray to know your clock time, you need to add the following code to your emacs' init file:
+1. In order for OrgClockTray to know about your clock time, you'll need to add the following code to your emacs' init file. It will export your clock time to an external file, which OrgClockTray can then read and display accordingly.
 
         (defun current-clock-time-to-file ()
           (interactive)
