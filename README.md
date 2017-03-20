@@ -1,4 +1,4 @@
-# OrgClockTray
+# Introduction
 
 OrgClockTray displays your org-mode clock time in a tray
 icon in Windows' Taskbar.
