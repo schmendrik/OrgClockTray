@@ -26,7 +26,7 @@ Since the space within a 16x16 pixel icon is relatively limited, the total time 
 
 ## Installation
 
-1. In order for OrgClockTray to know about your clock time, you'll need to add the following code to your emacs' init file. It will export your clock time to an external file, which OrgClockTray can then read and display accordingly.
+1. In order for OrgClockTray to know about your clock time, you'll need to add the following lisp code to your emacs' init file so that your clock time can be exported to an external file. OrgClockTray will read and display that time accordingly.
 
         (defun current-clock-time-to-file ()
           (interactive)
@@ -46,4 +46,4 @@ Note: By default, OrgClockTray reads from a file
 named `.task`, which is located in your `~/.emacs.d/` directory. You can
 modify the file path in the lisp code to export the time to another
 file path, which you'll need to pass to OrgClockTray as a command line
-argument.
+argument, e. g. `OrgClockTray.exe C:\path\to\my\.task`.
